@@ -1,0 +1,36 @@
+IP: 10.129.117.243
+
+Starting Nmap 7.94 ( https://nmap.org  ) at 2024-01-04 17:13 GMT
+Stats: 0:00:50 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan
+Service scan Timing: About 75.00% done; ETC: 17:14 (0:00:16 remaining)
+Nmap scan report for 10.129.117.243
+Host is up (0.14s latency).
+Not shown: 996 closed tcp ports (reset)
+PORT     STATE SERVICE         VERSION
+22/tcp   open  ssh             OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+6789/tcp open  ibm-db2-admin?
+8080/tcp open  http-proxy
+8443/tcp open  ssl/nagios-nsca Nagios NSCA
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+
+
+Port 8080 redirects to 8443, which is a Unifi service. 
+
+Looks vulnerable to Log4j (CVE-2021-44228)
+
+Metasploit appears to have the exploit: multi/http/ubiquiti_unifi_log4shell (Got shell!)
+
+Server is running mongodb running on 27117
+
+{ "_id" : ObjectId("61ce278f46e0fb0012d47ee4"), "name" : "administrator", "email" : "administrator@unified.htb", "x_shadow" : "$6$Ry6Vdbse$8enMR5Znxoo.WfCMd/Xk65GwuQEPx1M.QP8/qHiQV0PvUc3uHuonK4WcTQFN1CRk3GwQaquyVwCVq8iQgPTt4.", "time_created" : N }
+{ "_id" : ObjectId("61ce4a63fbce5e00116f424f"), "email" : "michael@unified.htb", "name" : "michael", "x_shadow" : "$6$spHwHYVF$mF/VQrMNGSau0IP7LjqQMfF5VjZBph6VUf4clW3SULqBjDNQwW.BlIqsafYbLWmKRhfWTiZLjhSP.D/M1h5yJ0", "requires_new_password" : false, "time_created" : NumberLong(1640909411), "last_site_name" : "default", "email_alert_enabled" : false, "email_alert_grouping_enabled" : false, "email_alert_grouping_delay" : 60, "push_alert_enabled" : false  }
+{ "_id" : ObjectId("61ce4ce8fbce5e00116f4251"), "email" : "seamus@unified.htb", "name" : "Seamus", "x_shadow" : "$6$NT.hcX..$aFei35dMy7Ddn.O.UFybjrAaRR5UfzzChhIeCs0lp1mmXhVHol6feKv4hj8LaGe0dTiyvq1tmA.j9.kfDP.xC.", "requires_new_password" : true, "time_created" : NumberLong(1640910056), "last_site_name" : "default"  }
+{ "_id" : ObjectId("61ce4d27fbce5e00116f4252"), "email" : "warren@unified.htb", "name" : "warren", "x_shadow" : "$6$DDOzp/8g$VXE2i.FgQSRJvTu.8G4jtxhJ8gm22FuCoQbAhhyLFCMcwX95ybr4dCJR/Otas100PZA9fHWgTpWYzth5KcaCZ.", "requires_new_password" : true, "time_created" : NumberLong(1640910119), "last_site_name" : "default"  }
+{ "_id" : ObjectId("61ce4d51fbce5e00116f4253"), "email" : "james@unfiied.htb", "name" : "james", "x_shadow" : "$6$ON/tM.23$cp3j11TkOCDVdy/DzOtpEbRC5mqbi1PPUM6N4ao3Bog8rO.ZGqn6Xysm3v0bKtyclltYmYvbXLhNybGyjvAey1", "requires_new_password" : false, "time_created" : NumberLong(1640910161), "last_site_name" : "default"  }
+
+$6$spHwHYVF$mF/VQrMNGSau0IP7LjqQMfF5VjZBph6VUf4clW3SULqBjDNQwW.BlIqsafYbLWmKRhfWTiZLjhSP.D/M1h5yJ0
+
+
+Flags
+user: 6ced1a6a89e666c0620cdb10262ba127
+
