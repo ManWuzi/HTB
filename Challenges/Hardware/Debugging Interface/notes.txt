@@ -1,0 +1,12 @@
+Downloaded and extracted the zip
+
+Was a .sal file.
+
+Used Logic 2 tool to analyze the file.
+
+To identify the baud rate, I installed "Baud rate estimate" extension by Jonathan Reichelt Gjetsen.
+
+I used that to get the baud rate, indicated by f^baud = 31230 and the number of bits by N^falling = 7
+
+
+Flag: HTB{d38u991n9_1n732f4c35_c4n_83_f0und_1n_41m057_3v32y_3m83dd3d_d3v1c3!!52}
