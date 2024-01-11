@@ -1,0 +1,19 @@
+Running file on the firmware yielded
+firmware.bin: Linux kernel ARM boot executable zImage (big-endian)
+
+Binwalk output
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             Linux kernel ARM boot executable zImage (big-endian)
+14419         0x3853          xz compressed data
+14640         0x3930          xz compressed data
+538952        0x83948         Squashfs filesystem, little endian, version 4.0, compression:xz, size: 2068458 bytes, 995 inodes, blocksize: 262144 bytes, created: 2021-03-11 03:18:10
+
+Extracted the binary with binwalk -eM firmware.bin
+
+Found telnet credentials: /etc/scripts/telnetd.sh (username) and the corresponding password /etc/config/sign (indicated in the script)
+
+Flag:
+HTB{4_hug3_blund3r_d289a1_!!}
+

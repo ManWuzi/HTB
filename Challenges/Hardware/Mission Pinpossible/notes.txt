@@ -1,0 +1,32 @@
+File appears to contain electric pulses using I2C - identified from the image using IC PCF8574T.
+
+Upon googling that, it uses I2C which uses 2 channels (SDA, SCL). I downloaded Salae Logic 1 to decode it but it doesn't work.
+
+The data decoded doesn't contain anything relating to the flag.
+
+I've been looking at the IC itself, without looking at the LCD which is QAPASS UI.
+
+Okay, I just cracked it.
+Flag:
+HTB{84d_d3519n_c4n_134d_70_134k5!d@}
+
+
+Where do I start?
+Step 1 - Look at the image, it's using an LCD + Arduino
+Step 2 - Extract the data with Logic 1 (I2C) to txt or csv (op_pinpossible.txt)
+Step 3 - I run this command to extract it all
+cat op_pinpossible.txt| cut -d ',' -f 4 | sed 's/0b//g' | tr -d ' ' | grep -E ".*1.1*$"  | cut -c 1-4 | tr -d '\n' | perl -lpe '$_=pack"B*",$_' | sed 's/Enter Password//g' | tr -d '* '
+
+How I got this is wild.
+- Read the LCD 1602 datasheet. It explains how I2C works and the pins and how it all connects.
+- Datasheet provides good information but isn't very necessary to crack the code.
+- I had to read the LiquidCrystal code from https://github.com/johnrickman/LiquidCrystal_I2C/tree/master
+- In the LiquidCrystal_I2C.cpp/h file, there are a number of functions that show data is sent over the wire.
+- What's important is this: To print to scren, it send the data (in 4 bit) with the En and Rs bit. These 2 bits indicate that it's been printed to screen.
+- What I did was to grep for those as the final bits '.*1.1$' (regex) and then get the first 4 bits and voila! I see it all.
+
+Also, massive hints in: https://forum.hackthebox.com/t/official-mission-pinpossible-discussion/3020/36
+
+Official discussion
+
+Thank you God. This was difficult

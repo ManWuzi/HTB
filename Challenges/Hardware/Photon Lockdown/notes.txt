@@ -1,0 +1,9 @@
+Used binwalk to extract rootfs
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             Squashfs filesystem, little endian, version 4.0, compression:gzip, size: 10936182 bytes, 910 inodes, blocksize: 131072 bytes, created: 2023-10-01 07:02:43
+
+greped for HTB
+
+Flag:
+HTB{N0w_Y0u_C4n_L0g1n}

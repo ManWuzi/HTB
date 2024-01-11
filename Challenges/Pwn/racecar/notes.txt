@@ -11,3 +11,28 @@ dpkg --add-architecture i386
 The docker image didn't have gdb by default so I installed it to analyze the binary:
 apt-get update
 apt install gdb
+
+
+Run with `gdb racecar`
+Get all functions - info functions
+Relevant functions
+0x000008cd  read_int
+0x00000929  banner
+0x00000b93  setup
+0x00000c02  race_type
+0x00000c91  car_menu
+0x00001082  info
+0x000011d2  car_info
+0x00001352  menu
+0x000013e1  main
+
+
+Disassemble function - disas <function name>
+
+
+Installing radare2 - apt install radare2
+
+Using guide here: https://rderik.com/blog/understanding-buffer-overflows-using-radare2/
+
+Tip: Had to set `e dbg.bpinmaps=0`  on radare else couldn't debug.
+
