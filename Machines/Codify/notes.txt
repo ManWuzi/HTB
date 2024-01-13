@@ -1,0 +1,70 @@
+IP: 10.10.11.239
+Nmap scan report for 10.10.11.239
+Host is up (0.13s latency).
+Not shown: 997 closed tcp ports (reset)
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   256 96:07:1c:c6:77:3e:07:a0:cc:6f:24:19:74:4d:57:0b (ECDSA)
+|_  256 0b:a4:c0:cf:e2:3b:95:ae:f6:f5:df:7d:0c:88:d6:ce (ED25519)
+80/tcp   open  http    Apache httpd 2.4.52
+|_http-title: Did not follow redirect to http://codify.htb/
+|_http-server-header: Apache/2.4.52 (Ubuntu)
+3000/tcp open  ppp?
+Service Info: Host: codify.htb; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+Codify with vm2@3.9.16 is running on the server which is vulnerable to CVE-2023-29199 - Sandbox escape
+
+Exploit code can be found here: https://gist.github.com/leesh3288/381b230b04936dd4d74aaf90cc8bb244
+
+Found credentials for user joshua in an sqlite db - /var/www/contact/tickets.db
+$2a$12$SOn8Pf6z8fO/nVsNbAAequ/P6vLRJJl7gCUEiYBU2iLHn4G/p/Zw2 (cracked: spongebob1)
+
+sudo -l
+User joshua may run the following commands on codify:
+    (root) /opt/scripts/mysql-backup.sh
+
+The script (/opt/scripts/mysql-backup.sh ) contains
+#!/bin/bash
+DB_USER="root"
+DB_PASS=$(/usr/bin/cat /root/.creds)
+BACKUP_DIR="/var/backups/mysql"
+
+read -s -p "Enter MySQL password for $DB_USER: " USER_PASS
+/usr/bin/echo
+
+if [[ $DB_PASS == $USER_PASS ]]; then
+        /usr/bin/echo "Password confirmed!"
+else
+        /usr/bin/echo "Password confirmation failed!"
+        exit 1
+fi
+
+/usr/bin/mkdir -p "$BACKUP_DIR"
+
+databases=$(/usr/bin/mysql -u "$DB_USER" -h 0.0.0.0 -P 3306 -p"$DB_PASS" -e "SHOW DATABASES;" | /usr/bin/grep -Ev "(Database|information_schema|performance_schema)")
+
+for db in $databases; do
+    /usr/bin/echo "Backing up database: $db"
+    /usr/bin/mysqldump --force -u "$DB_USER" -h 0.0.0.0 -P 3306 -p"$DB_PASS" "$db" | /usr/bin/gzip > "$BACKUP_DIR/$db.sql.gz"
+done
+
+/usr/bin/echo "All databases backed up successfully!"
+/usr/bin/echo "Changing the permissions"
+/usr/bin/chown root:sys-adm "$BACKUP_DIR"
+/usr/bin/chmod 774 -R "$BACKUP_DIR"
+/usr/bin/echo 'Done!'
+
+
+If statement can be bypassed by using '*' as the entry for USER_PASS which acts as a wildcard and allows any entry.
+
+Using pspy64 binary, we can see the password of root in the running processes
+
+Credentials
+joshua: spongebob1
+root: kljh12k3jhaskjh12kjh3
+
+Flags
+user: d5c7bdf35e3b7ca25f045e04bd48bf4f
+root: 9e3680175bfe6c4f70d03fce430d428d
