@@ -51,7 +51,7 @@ password - derby-ofbiz
 Found admin password in derby DB
 $SHA$d$uP0_QaVBpDWFeo8-dRzDqRwXQ2I (monkeybizness)
 
-Cracked it using CyberChef + hashcat
+Cracked it using CyberChef + hashcat (solution from https://breachforums.is/Thread-Bizness-HTB?page=9)
 On CyberChef:
 From Base64(uP0_QaVBpDWFeo8-dRzDqRwXQ2I - URLSafe) + To Hex (None) = b8fd3f41a541a435857a8f3e751cc3a91c174362
 
