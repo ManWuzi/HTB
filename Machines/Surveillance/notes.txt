@@ -1,0 +1,62 @@
+IP: 10.10.11.245
+Starting Nmap 7.94 ( https://nmap.org  ) at 2024-01-26 11:59 GMT
+Nmap scan report for 10.10.11.245
+Host is up (0.15s latency).
+Not shown: 991 closed tcp ports (reset)
+PORT     STATE    SERVICE      VERSION
+22/tcp   open     ssh          OpenSSH 8.9p1 Ubuntu 3ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey:
+|   256 96:07:1c:c6:77:3e:07:a0:cc:6f:24:19:74:4d:57:0b (ECDSA)
+|_  256 0b:a4:c0:cf:e2:3b:95:ae:f6:f5:df:7d:0c:88:d6:ce (ED25519)
+80/tcp   open     http         nginx 1.18.0 (Ubuntu)
+|_http-server-header: nginx/1.18.0 (Ubuntu)
+|_http-title: Did not follow redirect to http://surveillance.htb/
+99/tcp   filtered metagram
+541/tcp  filtered uucp-rlogin
+987/tcp  filtered unknown
+1009/tcp filtered unknown
+1023/tcp filtered netvenuechat
+4005/tcp filtered pxc-pin
+8181/tcp filtered intermapper
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+/admin indicates application is running Craft CMS
+
+.htaccess file
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Send would-be 404 requests to Craft
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/(favicon\.ico|apple-touch-icon.*\.png)$ [NC]
+    RewriteRule (.+) index.php?p=$1 [QSA,L]
+</IfModule>
+
+
+Potential vulnerability - CVE-2023-41892 - https://gist.github.com/gmh5225/8fad5f02c2cf0334249614eb80cbf4ce
+
+
+
+Credentials:
+mysql:craftuser:CraftCMSPassword2023! (Found in app config)
+craft:admin:$2y$13$FoVGcLXXNe81B6x9bKry9OzGSSIYL7/ObcmQ0CXtgw.EpuNcx8tGe - user: Matthew B - Found in db
+craft:admin:39ed84b22ddc63ab3725a1820aaa7f73a8f3f10d0848123562c9f35c675770ec (starcraft122490) - Found in sql dump file
+mysql:zmuser:ZoneMinderPassword2023 (Found in zoneminder config)
+zoneminder:admin:$2y$10$BuFy0QTupRjSWW6kEAlBCO6AlZ8ZPGDI8Xba5pi/gLr2ap86dxYd. -Found in db
+
+
+Local port forwarding to zoneminder from local machine
+ssh -L 8910:127.0.0.1:8080 matthew@10.10.11.245
+
+Zoneminder@1.36.32 vulnerable to CVE-2023-26035
+
+Got into the zoneminder user account with an exploit: https://github.com/rvizx/CVE-2023-26035
+
+
+To get root, there's an SUID binary /var/tmp/bash. Using gtfobins, I got shell with 'bash -p'
+
+Flags:
+user: 3a2f8b94ee4b25c22d454637c01f10ca
+root: 341be58387f605b460400dbee01a3026
+
