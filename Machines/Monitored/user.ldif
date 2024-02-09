@@ -1,0 +1,8 @@
+dn: dc=monitored,dc=htb
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: monitored.htb
+dc: monitored
+uid: belaqua
+

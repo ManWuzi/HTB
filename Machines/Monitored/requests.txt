@@ -1,0 +1,17 @@
+POST /nagiosxi/login.php HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Accept-Language: en-GB,en;q=0.9
+Accept-Encoding: gzip, deflate, br
+Sec-Fetch-Mode: navigate
+Host: nagios.monitored.htb
+Origin: https://nagios.monitored.htb
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15
+Referer: https://nagios.monitored.htb/nagiosxi/login.php
+Content-Length: 153
+Connection: keep-alive
+Sec-Fetch-Dest: document
+Cookie: nagiosxi=cn48pkq3gm06h58mrpav494ld3
+
+nsp=b50fdbbda7d4f07a2a25da446526906fefa9a069d83d6550374d7d0a27287080&page=auth&debug=&pageopt=login&username=nagiosadmin&password=FUZZ&loginButton=

